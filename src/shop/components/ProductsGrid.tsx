@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import type { Product } from "@/dataMocks/products.mock";
 import ProductCard from "./ProductCar";
 import FilterSidebar from "./FilterSideBar";
 import { Filter, Grid, List } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { useState } from "react";
+import type { Product } from "@/interfaces/product.interface";
 
 interface Props {
   products: Product[];
@@ -21,7 +21,9 @@ export const ProductsGrid = ({ products }: Props) => {
     setSearchParams(searchParams);
   };
 
-  {/* Products Section */}
+  {
+    /* Products Section */
+  }
   return (
     <section className="py-12 px-4 lg:px-8">
       <div className="container mx-auto">
@@ -101,10 +103,11 @@ export const ProductsGrid = ({ products }: Props) => {
                 <ProductCard
                   key={product.id}
                   id={product.id}
-                  name={product.name}
+                  name={product.title}
                   price={product.price}
-                  image={product.image}
-                  category={product.category}
+                  image={product.images[0]}
+                  category={product.gender}
+                  sizes={product.sizes}
                 />
               ))}
             </div>
