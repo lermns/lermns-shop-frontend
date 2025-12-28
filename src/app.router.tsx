@@ -11,6 +11,7 @@ import { AdminProductPage } from "./admin/pages/product/AdminProductPage";
 // import { AdminLayout } from "./admin/layouts/AdminLayout";
 // import { AuthLayout } from "./auth/layouts/AuthLayout";
 import { lazy } from "react";
+import { AdminRoute, NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
 
 // Hacemos la carga perezosa de estos 2 componentes porque no necesitamos que se rendericen apenas inicie la app
 const AuthLayout = lazy(() => import("./auth/layouts/AuthLayout"));
@@ -41,7 +42,10 @@ export const appRouter = createBrowserRouter([
   // Auth Routes
   {
     path: "/auth",
-    element: <AuthLayout />,
+    element: (
+      <NotAuthenticatedRoute>
+        <AuthLayout />
+      </NotAuthenticatedRoute>),
     children: [
       {
         index: true,
@@ -61,7 +65,10 @@ export const appRouter = createBrowserRouter([
   // Admin Routes
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <AdminRoute>
+        <AdminLayout />
+      </AdminRoute>),
     children: [
       {
         index: true,

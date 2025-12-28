@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { loginAction } from "../action/login.action";
 import type { User } from "@/interfaces/user.interface";
+import { checkAuthAction } from "../action/check-auth.action";
 
 type AuthStatus = "authenticated" | "not-authenticated" | "checking";
 
@@ -10,17 +11,25 @@ type AuthState = {
     token: string | null,
     authStatus: AuthStatus,
     // Getters
+    isAdmin: () => boolean;
 
     // Actions 
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
+    checkAuthStatus: () => Promise<boolean>;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
     // implementation store 
     user: null,
     token: null,
     authStatus: "checking",
+
+    // Getters
+    isAdmin: () => {
+        const roles = get().user?.roles || [];
+        return (roles as string[]).includes("admin");
+    },
 
     //Action 
     login: async (email, password) => {
@@ -28,18 +37,38 @@ export const useAuthStore = create<AuthState>()((set) => ({
         try {
             const data = await loginAction(email, password);
             localStorage.setItem("token", data.token);
-            set({ user: data.user, token: data.token });
+            set({ user: data.user, token: data.token, authStatus: "authenticated" });
             return true;
         } catch (error) {
             localStorage.removeItem("token");
-            set({ user: null, token: null });
+            set({ user: null, token: null, authStatus: "not-authenticated" });
             return false;
         }
     },
 
     logout: () => {
         localStorage.removeItem("token");
-        set({ user: null, token: null });
-    }
+        set({ user: null, token: null, authStatus: "not-authenticated" });
+    },
 
+    checkAuthStatus: async () => {
+        try {
+            const { user, token } = await checkAuthAction();
+            set({
+                user: user,
+                token: token,
+                authStatus: "authenticated",
+            });
+            return true;
+
+        } catch (error) {
+            console.log(error);
+            set({
+                user: null,
+                token: null,
+                authStatus: "not-authenticated",
+            });
+            return false;
+        };
+    }
 }));
