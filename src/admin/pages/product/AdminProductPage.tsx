@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { X, Plus, Upload, Tag, SaveAll } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
+import { useProduct } from '@/admin/hook/useProduct';
 
 interface Product {
   id: string;
@@ -23,6 +24,7 @@ interface Product {
 
 export const AdminProductPage = () => {
   const { id } = useParams();
+  const { data } = useProduct(id!);
 
   const productTitle = id === 'new' ? 'Nuevo producto' : 'Editar producto';
   const productSubtitle =
@@ -31,22 +33,16 @@ export const AdminProductPage = () => {
       : 'Aquí puedes editar el producto.';
 
   const [product, setProduct] = useState<Product>({
-    id: '376e23ed-df37-4f88-8f84-4561da5c5d46',
-    title: "Men's Raven Lightweight Hoodie",
-    price: 115,
-    description:
-      "Introducing the Tesla Raven Collection. The Men's Raven Lightweight Hoodie has a premium, relaxed silhouette made from a sustainable bamboo cotton blend. The hoodie features subtle thermoplastic polyurethane Tesla logos across the chest and on the sleeve with a french terry interior for versatility in any season. Made from 70% bamboo and 30% cotton.",
-    slug: 'men_raven_lightweight_hoodie',
-    stock: 10,
-    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    gender: 'men',
-    tags: ['hoodie'],
-    images: [
-      'https://placehold.co/250x250',
-      'https://placehold.co/250x250',
-      'https://placehold.co/250x250',
-      'https://placehold.co/250x250',
-    ],
+    id: data!.id,
+    title: data!.title,
+    price: data!.price,
+    description: data!.description,
+    slug: data!.slug,
+    stock: data!.stock,
+    sizes: data!.sizes,
+    gender: data!.gender,
+    tags: data!.tags,
+    images: data!.images,
   });
 
   const [newTag, setNewTag] = useState('');
@@ -270,11 +266,10 @@ export const AdminProductPage = () => {
                       key={size}
                       onClick={() => addSize(size)}
                       disabled={product.sizes.includes(size)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                        product.sizes.includes(size)
-                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
-                      }`}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${product.sizes.includes(size)
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
+                        }`}
                     >
                       {size}
                     </button>
@@ -335,11 +330,10 @@ export const AdminProductPage = () => {
 
               {/* Drag & Drop Zone */}
               <div
-                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
-                  dragActive
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-slate-300 hover:border-slate-400'
-                }`}
+                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${dragActive
+                  ? 'border-blue-400 bg-blue-50'
+                  : 'border-slate-300 hover:border-slate-400'
+                  }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -416,19 +410,18 @@ export const AdminProductPage = () => {
                     Inventario
                   </span>
                   <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      product.stock > 5
-                        ? 'bg-green-100 text-green-800'
-                        : product.stock > 0
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${product.stock > 5
+                      ? 'bg-green-100 text-green-800'
+                      : product.stock > 0
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
-                    }`}
+                      }`}
                   >
                     {product.stock > 5
                       ? 'En stock'
                       : product.stock > 0
-                      ? 'Bajo stock'
-                      : 'Sin stock'}
+                        ? 'Bajo stock'
+                        : 'Sin stock'}
                   </span>
                 </div>
 

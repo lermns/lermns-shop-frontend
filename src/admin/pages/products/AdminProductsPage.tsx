@@ -1,4 +1,5 @@
 import { AdminTitle } from "@/admin/components/AdminTitle";
+import { CustomFullScreenLoading } from "@/components/custom/CustomFullScreenLoading";
 import { CustomPagination } from "@/components/custom/CustomPagination";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +10,15 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
-import { PlusIcon } from "lucide-react";
+import { useProducts } from "@/shop/hooks/useProducts";
+import { PencilIcon, PlusIcon } from "lucide-react";
 import { Link } from "react-router";
 
 export const AdminProductsPage = () => {
+  const { data, isLoading } = useProducts();
+
+  if (isLoading) return <CustomFullScreenLoading />;
+
   return (
     <>
       <div className="flex justify-between items-center">
@@ -32,7 +38,6 @@ export const AdminProductsPage = () => {
         {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">ID</TableHead>
             <TableHead>Imagen</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Precio</TableHead>
@@ -42,28 +47,41 @@ export const AdminProductsPage = () => {
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">1</TableCell>
-            <TableCell>
-              <img
-                src="https://placehold.co/250x250"
-                alt="Product"
-                className="w-20 h-20 object-cover rounded-md"
-              />
-            </TableCell>
-            <TableCell>Product 1</TableCell>
-            <TableCell>€250.000</TableCell>
-            <TableCell>Categoría 1</TableCell>
-            <TableCell>100 stock</TableCell>
-            <TableCell>XS, S, L</TableCell>
-            <TableCell className="text-right">
-              <Link to={`/admin/product/t-shirt-lermns`}>Editar</Link>
-            </TableCell>
-          </TableRow>
+          {/* Mapeo de la lista de productos recibidos por el custom useProducts */}
+          {
+            data!.products.map(value => (
+              <TableRow>
+                <TableCell>
+                  <Link to={`/admin/product/${value.id}`} >
+                    <img
+                      src={value.images[0]}
+                      alt={value.title}
+                      className="w-20 h-20 object-cover rounded-md"
+                    />
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link to={`/admin/product/${value.id}`} className="underline hover:text-blue-500">
+                    {value.title}
+                  </Link>
+                </TableCell>
+                <TableCell>€{value.price}</TableCell>
+                <TableCell>{value.tags}</TableCell>
+                <TableCell>{value.stock} stock</TableCell>
+                <TableCell>{value.sizes.join(", ")}</TableCell>
+                <TableCell className="text-right">
+                  <Link to={`/admin/product/${value.id}`}>
+                    <PencilIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 ml-5" />
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))
+          }
         </TableBody>
       </Table>
-      <CustomPagination totalPages={10} />
+      <CustomPagination totalPages={data!.pages} />
     </>
   );
 };
