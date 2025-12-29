@@ -12,7 +12,6 @@ export const useProducts = () => {
   const sizes = searchParams.get("sizes") || undefined;
   const q = searchParams.get("query") || "";
 
-  console.log({ sizes, gender });
   const offset = (Number(page) - 1) * Number(limit);
 
   const price = searchParams.get("price") || "any";

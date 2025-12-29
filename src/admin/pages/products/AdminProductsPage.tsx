@@ -51,16 +51,14 @@ export const AdminProductsPage = () => {
         <TableBody>
           {/* Mapeo de la lista de productos recibidos por el custom useProducts */}
           {
-            data!.products.map(value => (
-              <TableRow>
+            data!.products.map((value) => (
+              <TableRow key={value.id}>
                 <TableCell>
-                  <Link to={`/admin/product/${value.id}`} >
-                    <img
-                      src={value.images[0]}
-                      alt={value.title}
-                      className="w-20 h-20 object-cover rounded-md"
-                    />
-                  </Link>
+                  <img
+                    src={value.images[0]}
+                    alt={value.title}
+                    className="w-20 h-20 object-cover rounded-md"
+                  />
                 </TableCell>
                 <TableCell>
                   <Link to={`/admin/product/${value.id}`} className="underline hover:text-blue-500">
