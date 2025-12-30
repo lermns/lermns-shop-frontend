@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { Product } from '@/interfaces/product.interface';
 import { X, SaveAll, Tag, Plus, Upload } from 'lucide-react';
 import { Link } from 'react-router';
+import { cn } from '@/lib/utils';
 
 interface Props {
     title: string;
@@ -19,7 +20,8 @@ const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 export const ProductForm = ({ title, subTitle, product }: Props) => {
     const [newTag, setNewTag] = useState('');
     const [dragActive, setDragActive] = useState(false);
-    const { register } = useForm({
+
+    const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: product,
     });
 
@@ -78,17 +80,22 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
         console.log(files);
     };
 
+    //TODO: form submit logic
+    const submit = () => {
+        console.log('Form submitted');
+    };
+
     return (
-        <>
+        <form onSubmit={handleSubmit(submit)}>
             <div className="flex justify-between items-center">
                 <AdminTitle title={title} subtitle={subTitle} />
                 <div className="flex justify-end mb-10 gap-4">
-                    <Button variant="outline">
-                        <Link to="/admin/products" className="flex items-center gap-2">
+                    <Link to="/admin/products" className="flex items-center gap-2">
+                        <Button variant="outline">
                             <X className="w-4 h-4" />
                             Cancelar
-                        </Link>
-                    </Button>
+                        </Button>
+                    </Link>
 
                     <Button>
                         <SaveAll className="w-4 h-4" />
@@ -114,29 +121,48 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                     </label>
                                     <input
                                         type="text"
-                                        {...register('title')}
-                                        // value={product.title}
-                                        // onChange={(e) => handleInputChange('title', e.target.value)}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        {...register('title', {
+                                            required: 'El título es obligatorio',
+                                        })}
+                                        className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
+                                            {
+
+                                                'border-red-600': errors.title
+                                            }
+                                        )}
                                         placeholder="Título del producto"
                                     />
+                                    {
+                                        errors.title &&
+                                        (<p className="text-red-600">{errors.title.message}</p>)
+                                    }
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Precio ($)
+                                            Precio (€)
                                         </label>
                                         <input
                                             type="number"
-                                            value={product.price}
-                                            {...register('price')}
-                                            // onChange={(e) =>
-                                            //   handleInputChange('price', parseFloat(e.target.value))
-                                            // }
-                                            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+
+                                            {...register('price', {
+                                                required: 'El precio debe obligatorio',
+                                                min: { value: 1, message: 'El precio debe ser positivo' },
+                                                max: { value: 500, message: 'El precio debe ser menor a 500' },
+                                            })}
+                                            className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
+                                                {
+
+                                                    'border-red-600': errors.price
+                                                }
+                                            )}
                                             placeholder="Precio del producto"
                                         />
+                                        {
+                                            errors.price &&
+                                            (<p className="text-red-600">{errors.price.message}</p>)
+                                        }
                                     </div>
 
                                     <div>
@@ -145,14 +171,24 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         </label>
                                         <input
                                             type="number"
-                                            {...register('stock')}
-                                            // value={product.stock}
-                                            // onChange={(e) =>
-                                            //   handleInputChange('stock', parseInt(e.target.value))
-                                            // }
-                                            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            {...register('stock', {
+                                                required: 'El stock es obligatorio',
+                                                min: { value: 0, message: 'El stock no puede ser negativo' },
+                                                max: { value: 1000, message: 'El stock debe ser menor a 1000' },
+                                            })}
+
+                                            className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
+                                                {
+
+                                                    'border-red-600': errors.stock
+                                                }
+                                            )}
                                             placeholder="Stock del producto"
                                         />
+                                        {
+                                            errors.stock &&
+                                            (<p className="text-red-600">{errors.stock.message}</p>)
+                                        }
                                     </div>
                                 </div>
 
@@ -162,12 +198,22 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                     </label>
                                     <input
                                         type="text"
-                                        {...register('slug')}
-                                        // value={product.slug}
-                                        // onChange={(e) => handleInputChange('slug', e.target.value)}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        {...register('slug', {
+                                            required: 'El slug es obligatorio',
+                                        })}
+
+                                        className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
+                                            {
+
+                                                'border-red-600': errors.slug
+                                            }
+                                        )}
                                         placeholder="Slug del producto"
                                     />
+                                    {
+                                        errors.slug &&
+                                        (<p className="text-red-600">{errors.slug.message}</p>)
+                                    }
                                 </div>
 
                                 <div>
@@ -175,18 +221,25 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         Género del producto
                                     </label>
                                     <select
-                                        {...register('gender')}
-                                        // value={product.gender}
-                                        // onChange={(e) =>
-                                        //   handleInputChange('gender', e.target.value)
-                                        // }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        {...register('gender', {
+                                            required: 'El género es obligatorio',
+                                        })}
+                                        className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
+                                            {
+
+                                                'border-red-600': errors.gender
+                                            }
+                                        )}
                                     >
                                         <option value="men">Hombre</option>
                                         <option value="women">Mujer</option>
                                         <option value="unisex">Unisex</option>
                                         <option value="kids">Niño</option>
                                     </select>
+                                    {
+                                        errors.gender &&
+                                        (<p className="text-red-600">{errors.gender.message}</p>)
+                                    }
                                 </div>
 
                                 <div>
@@ -194,15 +247,23 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         Descripción del producto
                                     </label>
                                     <textarea
-                                        {...register('description')}
-                                        // value={product.description}
-                                        // onChange={(e) =>
-                                        //   handleInputChange('description', e.target.value)
-                                        // }
+                                        {...register('description', {
+                                            required: 'La descripción es obligatoria',
+                                        })}
+
                                         rows={5}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                        className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none`,
+                                            {
+
+                                                'border-red-600': errors.description
+                                            }
+                                        )}
                                         placeholder="Descripción del producto"
                                     />
+                                    {
+                                        errors.description &&
+                                        (<p className="text-red-600">{errors.description.message}</p>)
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -423,6 +484,6 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                     </div>
                 </div>
             </div>
-        </>
+        </form>
     );
 };

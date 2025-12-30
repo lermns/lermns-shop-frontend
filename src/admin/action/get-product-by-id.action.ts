@@ -1,12 +1,13 @@
 import { lermnsApi } from "@/api/lermnsApi";
 import type { Product } from "@/interfaces/product.interface";
+import type { User } from "@/interfaces/user.interface";
 
 export const getProductByIdAction = async (id: string): Promise<Product> => {
     if (!id) throw new Error("El ID del producto es requerido");
 
     if (id === "new") {
         return {
-            id: "new",
+            id: "",
             title: "",
             price: 0,
             description: "",
@@ -15,6 +16,14 @@ export const getProductByIdAction = async (id: string): Promise<Product> => {
             sizes: [],
             gender: "men",
             tags: [],
+            images: [],
+            user: {
+                id: "",
+                email: "",
+                fullName: "",
+                isActive: true,
+                roles: "",
+            } as User,
         } as unknown as Product;
     }
 
