@@ -1,60 +1,80 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useForm } from "react-hook-form";
 
 import { AdminTitle } from '@/admin/components/AdminTitle';
 import { Button } from '@/components/ui/button';
-import type { Product } from '@/interfaces/product.interface';
+import type { Product, Size } from '@/interfaces/product.interface';
 import { X, SaveAll, Tag, Plus, Upload } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { cn } from '@/lib/utils';
+import { CustomFullScreenLoading } from '@/components/custom/CustomFullScreenLoading';
 
 interface Props {
     title: string;
     subTitle: string;
     product: Product;
+    onSubmit: (productLike: Partial<Product>) => Promise<void>;
+    isPending: boolean;
 }
 
-const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const availableSizes: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-export const ProductForm = ({ title, subTitle, product }: Props) => {
-    const [newTag, setNewTag] = useState('');
+export const ProductForm = ({ title, subTitle, product, onSubmit, isPending }: Props) => {
     const [dragActive, setDragActive] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    //  Estas 2  lineas fueron puestas a fuerza para evitar el bug raro
+    // const { id } = useParams();
+    // product = { ...product, id: id || product.id };
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        getValues,
+        setValue,
+        watch,
+    } = useForm({
         defaultValues: product,
     });
 
+    const selectedSizes = watch("sizes");
+    const selectedStock = watch("stock");
+    const selectedTags = watch("tags");
+
+    console.log(product.id);
+    // // este fue un invento mio para mostrar el loading al enviar el formulario
+    // if (isPending) {
+    //     return <CustomFullScreenLoading title={id === 'new' ? 'Creando producto' : 'Actualizando producto'} />;
+    // }
+
     const addTag = () => {
-        if (newTag.trim() && !product.tags.includes(newTag.trim())) {
-            // setProduct((prev) => ({
-            //   ...prev,
-            //   tags: [...prev.tags, newTag.trim()],
-            // }));
+        if (inputRef.current?.value.trim() && !selectedTags.includes(inputRef.current?.value.trim())) {
+            const setTags = new Set(getValues("tags"));
+            setTags.add(inputRef.current?.value.trim() as Size);
+            setValue("tags", Array.from(setTags));
+            inputRef.current.value = '';
         }
     };
 
     const removeTag = (tagToRemove: string) => {
-        // setProduct((prev) => ({
-        //   ...prev,
-        //   tags: prev.tags.filter((tag) => tag !== tagToRemove),
-        // }));
+        const setTags = new Set(getValues("tags"));
+        setTags.delete(tagToRemove as Size);
+        setValue("tags", Array.from(setTags));
     };
 
-    const addSize = (size: string) => {
-        // if (!product.sizes.includes(size)) {
-        //   setProduct((prev) => ({
-        //     ...prev,
-        //     sizes: [...prev.sizes, size],
-        //   }));
-        // }
+    const addSize = (size: Size) => {
+        const setSizes = new Set(getValues("sizes"));
+        setSizes.add(size);
+        setValue("sizes", Array.from(setSizes));
+
     };
 
-    const removeSize = (sizeToRemove: string) => {
-        // setProduct((prev) => ({
-        //   ...prev,
-        //   sizes: prev.sizes.filter((size) => size !== sizeToRemove),
-        // }));
+    const removeSize = (sizeToRemove: Size) => {
+        const setSizes = new Set(getValues("sizes"));
+        setSizes.delete(sizeToRemove);
+        setValue("sizes", Array.from(setSizes));
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -80,13 +100,8 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
         console.log(files);
     };
 
-    //TODO: form submit logic
-    const submit = () => {
-        console.log('Form submitted');
-    };
-
     return (
-        <form onSubmit={handleSubmit(submit)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex justify-between items-center">
                 <AdminTitle title={title} subtitle={subTitle} />
                 <div className="flex justify-end mb-10 gap-4">
@@ -200,6 +215,7 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         type="text"
                                         {...register('slug', {
                                             required: 'El slug es obligatorio',
+                                            validate: (value) => !/\s/.test(value) || 'No se permiten espacios en blanco',
                                         })}
 
                                         className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
@@ -221,15 +237,8 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         Género del producto
                                     </label>
                                     <select
-                                        {...register('gender', {
-                                            required: 'El género es obligatorio',
-                                        })}
-                                        className={cn(`w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`,
-                                            {
-
-                                                'border-red-600': errors.gender
-                                            }
-                                        )}
+                                        {...register('gender')}
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     >
                                         <option value="men">Hombre</option>
                                         <option value="women">Mujer</option>
@@ -276,20 +285,27 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
 
                             <div className="space-y-4">
                                 <div className="flex flex-wrap gap-2">
-                                    {product.sizes.map((size) => (
-                                        <span
-                                            key={size}
-                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
-                                        >
-                                            {size}
-                                            <button
-                                                // onClick={() => removeSize(size)}
-                                                className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                                    {
+                                        availableSizes.map((size) => (
+                                            <span
+                                                key={size}
+                                                className={cn(`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200`,
+                                                    {
+                                                        "hidden": !selectedSizes.includes(size)
+                                                    }
+                                                )}
                                             >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </span>
-                                    ))}
+                                                {size}
+                                                <button
+                                                    type='button'
+                                                    className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                                    onClick={() => removeSize(size)}
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </span>
+                                        ))
+                                    }
                                 </div>
 
                                 <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
@@ -298,14 +314,15 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                     </span>
                                     {availableSizes.map((size) => (
                                         <button
+                                            type='button'
                                             key={size}
-                                        // onClick={() => addSize(size)}
-                                        // disabled={product.sizes.includes(size)}
-                                        // className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                                        //   product.sizes.includes(size)
-                                        //     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                        //     : 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
-                                        // }`}
+                                            onClick={() => addSize(size)}
+                                            disabled={getValues("sizes").includes(size)}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 
+                                                ${selectedSizes.includes(size)
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
+                                                }`}
                                         >
                                             {size}
                                         </button>
@@ -322,7 +339,7 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
 
                             <div className="space-y-4">
                                 <div className="flex flex-wrap gap-2">
-                                    {product.tags.map((tag) => (
+                                    {selectedTags.map((tag) => (
                                         <span
                                             key={tag}
                                             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200"
@@ -330,8 +347,8 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                             <Tag className="h-3 w-3 mr-1" />
                                             {tag}
                                             <button
-                                                // onClick={() => removeTag(tag)}
-                                                className="ml-2 text-green-600 hover:text-green-800 transition-colors duration-200"
+                                                onClick={() => removeTag(tag)}
+                                                className="cursor-pointer ml-2 text-green-600 hover:text-green-800 transition-colors duration-200"
                                             >
                                                 <X className="h-3 w-3" />
                                             </button>
@@ -342,6 +359,13 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
+                                        ref={inputRef}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === "," || e.key === " ") {
+                                                e.preventDefault();
+                                                addTag();
+                                            }
+                                        }}
                                         // value={newTag}
                                         // onChange={(e) => setNewTag(e.target.value)}
                                         // onKeyDown={(e) => e.key === 'Enter' && addTag()}
@@ -447,16 +471,16 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         Inventario
                                     </span>
                                     <span
-                                        className={`px-2 py-1 text-xs font-medium rounded-full ${product.stock > 5
+                                        className={`px-2 py-1 text-xs font-medium rounded-full ${selectedStock > 5
                                             ? 'bg-green-100 text-green-800'
-                                            : product.stock > 0
+                                            : selectedStock > 0
                                                 ? 'bg-yellow-100 text-yellow-800'
                                                 : 'bg-red-100 text-red-800'
                                             }`}
                                     >
-                                        {product.stock > 5
+                                        {selectedStock > 5
                                             ? 'En stock'
-                                            : product.stock > 0
+                                            : selectedStock > 0
                                                 ? 'Bajo stock'
                                                 : 'Sin stock'}
                                     </span>
@@ -476,7 +500,7 @@ export const ProductForm = ({ title, subTitle, product }: Props) => {
                                         Tallas disponibles
                                     </span>
                                     <span className="text-sm text-slate-600">
-                                        {product.sizes.length} tallas
+                                        {selectedSizes.length} tallas
                                     </span>
                                 </div>
                             </div>
