@@ -14,13 +14,17 @@ interface Props {
     title: string;
     subTitle: string;
     product: Product;
-    onSubmit: (productLike: Partial<Product>) => Promise<void>;
     isPending: boolean;
+    productId: string;
+
+
+    // methods
+    onSubmit: (productLike: Partial<Product>) => Promise<void>;
 }
 
 const availableSizes: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-export const ProductForm = ({ title, subTitle, product, onSubmit, isPending }: Props) => {
+export const ProductForm = ({ title, subTitle, product, onSubmit, isPending, productId }: Props) => {
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,18 +40,25 @@ export const ProductForm = ({ title, subTitle, product, onSubmit, isPending }: P
         setValue,
         watch,
     } = useForm({
-        defaultValues: product,
+        defaultValues: {
+            ...product,
+            id: undefined
+        },
     });
 
     const selectedSizes = watch("sizes");
     const selectedStock = watch("stock");
     const selectedTags = watch("tags");
 
-    console.log(product.id);
-    // // este fue un invento mio para mostrar el loading al enviar el formulario
-    // if (isPending) {
-    //     return <CustomFullScreenLoading title={id === 'new' ? 'Creando producto' : 'Actualizando producto'} />;
-    // }
+    console.log(productId);
+    // este fue un invento mio para mostrar el loading al enviar el formulario
+    if (isPending) {
+        return <CustomFullScreenLoading title={productId === 'new' ? 'Creando producto' : 'Actualizando producto'} />;
+    }
+
+    const handleFormSubmit = async (data: Partial<Product>) => {
+        await onSubmit({ ...data, id: productId });
+    }
 
     const addTag = () => {
         if (inputRef.current?.value.trim() && !selectedTags.includes(inputRef.current?.value.trim())) {
@@ -101,7 +112,7 @@ export const ProductForm = ({ title, subTitle, product, onSubmit, isPending }: P
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
             <div className="flex justify-between items-center">
                 <AdminTitle title={title} subtitle={subTitle} />
                 <div className="flex justify-end mb-10 gap-4">

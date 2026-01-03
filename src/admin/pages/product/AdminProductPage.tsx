@@ -22,9 +22,9 @@ export const AdminProductPage = () => {
 
 
   const handleSubmit = async (productLike: Partial<Product>) => {
-    // este no se ve como "new" pero es normal porque aun no se ejecuto
-    console.log("handle -> ", productLike.id);
-    await mutation.mutateAsync(productLike, {
+
+    const productData = { ...productLike, id };
+    await mutation.mutateAsync(productData, {
       onSuccess: (product: Product) => {
         toast.success("Producto actualizado correctamente", {
           position: "top-right",
@@ -32,7 +32,7 @@ export const AdminProductPage = () => {
         navigate(`/admin/product/${product.id}`);
       },
       onError: (error) => {
-        console.log("error mutation -> ", { error }, productLike.id);
+        console.log("error mutation -> ", { error }, productData.id);
         toast.error("Error al actualizar le producto", {
           position: "top-right",
         });
@@ -56,6 +56,7 @@ export const AdminProductPage = () => {
     title={title}
     subTitle={subTitle}
     product={product}
+    productId={id!} 
     onSubmit={handleSubmit}
     isPending={mutation.isPending}
   />;
