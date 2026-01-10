@@ -1,13 +1,13 @@
 import React from "react";
 import {
   Home,
-  Users,
   BarChart3,
-  Settings,
-  FileText,
-  ShoppingCart,
-  Bell,
-  HelpCircle,
+  // Users,
+  // Settings,
+  // FileText,
+  // ShoppingCart,
+  // Bell,
+  // HelpCircle,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -28,22 +28,22 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
   const { user } = useAuthStore();
 
   const isActiveRoute = (to: string) => {
-    // TODO: ajustarlo cuando estemos el la pantalla de producto
     if (pathname.includes("/admin/products/") && to === "/admin/products/") {
       return true;
     }
     return pathname === to;
   };
 
+  // TODO: agregar funcionalidades a los demás items del menu
   const menuItems = [
     { icon: Home, label: "Dashboard", to: "/admin" },
     { icon: BarChart3, label: "Analytics", to: "/admin/products" },
-    { icon: Users, label: "Users" },
-    { icon: ShoppingCart, label: "Orders" },
-    { icon: FileText, label: "Reports" },
-    { icon: Bell, label: "Notifications" },
-    { icon: Settings, label: "Settings" },
-    { icon: HelpCircle, label: "Help" },
+    // { icon: Users, label: "Users" },
+    // { icon: ShoppingCart, label: "Orders" },
+    // { icon: FileText, label: "Reports" },
+    // { icon: Bell, label: "Notifications" },
+    // { icon: Settings, label: "Settings" },
+    // { icon: HelpCircle, label: "Help" },
   ];
 
   return (
