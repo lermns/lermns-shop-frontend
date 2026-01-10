@@ -8,31 +8,38 @@ export const createUpdateProductAction = async (
 
     await sleep(1500); // Simular retardo de red
 
-    const { id, user, images = [], files = [], ...rest } = productLike;
+    const { id, user, images, files = [], ...rest } = productLike;
 
     const isCreating = id === "new";
 
     rest.stock = Number(rest.stock) || 0;
     rest.price = Number(rest.price) || 0;
 
-    // Preparar las imágenes
-    if (files.length > 0) {
-        const newImageNames = await uploadFiles(files);
-        images.push(...newImageNames);
-    }
+    // Preparar el objeto a enviar, lo definimos any para que react no se queje
+    const dataToSend: any = { ...rest };
 
-    const imagesToSave = images.map(image => {
-        if (image.includes("http")) return image.split("/").pop() || "";
-        return image;
-    })
+    // Solo maneja imágenes si hay files nuevos o si estamos creando un producto
+    if (files.length > 0 || isCreating) {
+        const imagesToSave = [...(images || [])];
+
+        // Si hay archivos nuevos
+        if (files.length > 0) {
+            const newImageNames = await uploadFiles(files);
+            imagesToSave.push(...newImageNames);
+        }
+
+        // Para enviar solo los nombres sin el https://
+        dataToSend.images = imagesToSave.map(image => {
+            if (image.includes("http")) return image.split("/").pop() || "";
+            return image;
+        });
+    }
+    // Si no hay files nuevos y estamos editando, no enviar el campo images
 
     const { data } = await lermnsApi<Product>({
         url: isCreating ? '/products' : `/products/${id}`,
         method: isCreating ? "POST" : "PATCH",
-        data: {
-            ...rest,
-            images: imagesToSave,
-        }
+        data: dataToSend
     });
 
     return {

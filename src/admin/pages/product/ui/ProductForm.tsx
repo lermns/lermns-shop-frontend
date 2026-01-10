@@ -73,18 +73,9 @@ export const ProductForm = ({
     );
   }
 
-  const handleFormSubmit = async (
-    data: Partial<FormInputs>
-  ) => {
-    const { files, ...productData } = data;
+  const handleFormSubmit = async (data: Partial<Product>) => {
+    await onSubmit({ ...data, id: productId });
 
-    // Solo incluir files si realmente hay archivos
-    const dataToSubmit =
-      files && files.length > 0
-        ? { ...productData, files, id: productId }
-        : { ...productData, id: productId };
-
-    await onSubmit(dataToSubmit);
     // Limpiar archivos después de enviar porque por alguna razón el useEffect no los hace al ser un producto nuevo
     setValue("files", []);
   };
