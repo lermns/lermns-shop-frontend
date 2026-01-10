@@ -1,4 +1,4 @@
-# 🛍️ Lermns Shop
+# 🛍️ Lermns Shop  
 
 Aplicación de e-commerce en construcción desarrollada con React + TypeScript para la gestión y venta de productos de moda.
 
@@ -7,7 +7,12 @@ El frontend está desplegado en **Netlify** y consume un backend desarrollado en
 🔗 **Demo:** [lermns-shop-react.netlify.app](https://lermns-shop-react.netlify.app/)  
 🔗 **Backend:** NestJS (Render)
 
----
+## 📌 Estado del proyecto  
+
+⚠️ **Este proyecto está en desarrollo activo.** Las funcionalidades actuales son estables y funcionales, pero se están agregando nuevas características continuamente.  
+
+**Versión actual:** v1.0.0  
+**Última actualización:** Enero 2025  
 
 ## 🚀 Tecnologías utilizadas  
 
