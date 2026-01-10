@@ -12,7 +12,6 @@ export const useProduct = (id: string) => {
         retry: false,
         staleTime: 1000 * 60 * 5,
     });
-    console.log({ id });
     //TODO: mutation for update product
     const mutation = useMutation(
         {
@@ -29,7 +28,6 @@ export const useProduct = (id: string) => {
             },
         }
     );
-    console.log({ id });
     //TODO: para borrar, metodo de prueba
     // const handleSubmitForm = async (productLike: Partial<Product>) => {
     //     console.log("hook useProduct -> ", { productLike });

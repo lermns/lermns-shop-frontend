@@ -3,32 +3,37 @@ import type { Product } from "@/interfaces/product.interface";
 import { sleep } from "@/lib/sleep";
 
 export const createUpdateProductAction = async (
-    productLike: Partial<Product>
+    productLike: Partial<Product> & { files?: File[] }
 ): Promise<Product> => {
 
     await sleep(1500); // Simular retardo de red
 
-    const { id, user, images = [], ...rest } = productLike;
+    const { id, user, images = [], files = [], ...rest } = productLike;
 
     const isCreating = id === "new";
-
-    // el 1ro manda un string vacio y el 2do no manda nada
-    console.log("1-> ", { id })
-    console.log("2-> ", productLike.id)
 
     rest.stock = Number(rest.stock) || 0;
     rest.price = Number(rest.price) || 0;
 
-    console.log({ isCreating });
+    // Preparar las imágenes
+    if (files.length > 0) {
+        const newImageNames = await uploadFiles(files);
+        images.push(...newImageNames);
+    }
+
+    const imagesToSave = images.map(image => {
+        if (image.includes("http")) return image.split("/").pop() || "";
+        return image;
+    })
 
     const { data } = await lermnsApi<Product>({
         url: isCreating ? '/products' : `/products/${id}`,
         method: isCreating ? "POST" : "PATCH",
-        data: rest
+        data: {
+            ...rest,
+            images: imagesToSave,
+        }
     });
-
-    // como da error este log nunca se ejecuta
-    console.log("data create -> ", data.id);
 
     return {
         ...data,
@@ -38,3 +43,27 @@ export const createUpdateProductAction = async (
         })
     };
 }
+
+export interface FileUploadResponse {
+    secureUrl: string;
+    fileName: string;
+}
+
+const uploadFiles = async (files: File[]) => {
+    const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const { data } = await lermnsApi<FileUploadResponse>({
+            url: "/files/product",
+            method: "POST",
+            data: formData,
+        });
+
+        return data.fileName;
+    });
+
+    const uploadedFileNames = await Promise.all(uploadPromises);
+
+    return uploadedFileNames;
+};
