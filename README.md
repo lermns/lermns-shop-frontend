@@ -4,6 +4,7 @@ Aplicación de e-commerce en construcción desarrollada con React + TypeScript p
 
 El frontend está desplegado en **Netlify** y consume un backend desarrollado en **NestJS**, desplegado en **Render**, con base de datos PostgreSQL en **Neon**.
 
+Debido al plan gratuito de Render, el backend se suspende por inactividad, por lo que la web puede tardar aproximadamente 30-40 segundos en arrancar.  
 🔗 **Demo:** [lermns-shop-react.netlify.app](https://lermns-shop-react.netlify.app/)  
 🔗 **Backend:** NestJS (Render)
 
